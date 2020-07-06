@@ -1,0 +1,7 @@
+build
+*.swp
+*.swo
+__pycache__/
+examples/venv
+dist/
+src/cgal_pybind.egg-info/
