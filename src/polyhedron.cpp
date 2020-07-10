@@ -169,7 +169,8 @@ py::tuple segmentation(Polyhedron& polyhendron) {
     CGAL::sdf_values(polyhendron, sdf_property_map);
 
     // Fill return_sdf_property_map
-    std::vector<std::tuple<double>> return_sdf_property_map(polyhendron.size_of_facets());
+    std::vector<std::tuple<double>> return_sdf_property_map;
+    return_sdf_property_map.reserve(polyhendron.size_of_facets());
     for(auto facet = polyhendron.facets_begin(); facet != polyhendron.facets_end(); ++facet){
         return_sdf_property_map.emplace_back(sdf_property_map[facet]);
      }
@@ -187,7 +188,9 @@ py::tuple segmentation(Polyhedron& polyhendron) {
     CGAL::segmentation_from_sdf_values(polyhendron, sdf_property_map, segment_property_map);
 
     // Fill return_segment_property_map
-    std::vector<std::tuple<size_t>> return_segment_property_map(polyhendron.size_of_facets());
+    std::vector<std::tuple<size_t>> return_segment_property_map;
+    return_segment_property_map.reserve(polyhendron.size_of_facets());
+
     for(auto facet = polyhendron.facets_begin(); facet != polyhendron.facets_end(); ++facet){
             return_segment_property_map.emplace_back(segment_property_map[facet]);
     }
