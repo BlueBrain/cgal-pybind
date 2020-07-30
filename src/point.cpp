@@ -3,19 +3,12 @@
 #include <boost/lexical_cast.hpp> // boost::lexical_cast
 
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
-using Point_3 = CGAL::Point_3<CGAL::Exact_predicates_inexact_constructions_kernel>;
-
-namespace py = pybind11;
-
-
-#include <pybind11/pybind11.h>
-#include <iostream>
-#include <pybind11/numpy.h>
 
 namespace py = pybind11;
 
 void bind_point(py::module& m)
 {
+    using Point_3 = CGAL::Point_3<CGAL::Exact_predicates_inexact_constructions_kernel>;
     py::class_<Point_3>(m, "Point_3")
         .def(py::init<int, int, int>(), py::arg("x"), py::arg("y"),
              py::arg("z"))
@@ -36,4 +29,3 @@ void bind_point(py::module& m)
         })
         ;
 }
-
