@@ -4,10 +4,9 @@ import numpy as np
 
 
 def test_polyhedron_contract():
-    mesh = trimesh.primitives.Capsule(transform=np.array([[1, 0, 0, 2],
-                                                          [0, 1, 0, 2],
-                                                          [0, 0, 1, 2],
-                                                          [0, 0, 0, 1], ]))
+    mesh = trimesh.primitives.Capsule(
+        transform=np.array([[1, 0, 0, 2], [0, 1, 0, 2], [0, 0, 1, 2], [0, 0, 0, 1],])
+    )
     # TODO: add_vertices/add_faces should be more efficient
     mesh_vertices = [Point_3(v[0], v[1], v[2]) for v in mesh.vertices]
     mesh_face_indices = [tuple(f) for f in mesh.faces]
@@ -22,10 +21,9 @@ def test_polyhedron_contract():
 
 
 def test_polyhedron_segmentation():
-    mesh = trimesh.primitives.Capsule(transform=np.array([[1, 0, 0, 2],
-                                                          [0, 1, 0, 2],
-                                                          [0, 0, 1, 2],
-                                                          [0, 0, 0, 1], ]))
+    mesh = trimesh.primitives.Capsule(
+        transform=np.array([[1, 0, 0, 2], [0, 1, 0, 2], [0, 0, 1, 2], [0, 0, 0, 1],])
+    )
     # TODO: add_vertices/add_faces should be more efficient
     mesh_vertices = [Point_3(v[0], v[1], v[2]) for v in mesh.vertices]
     mesh_face_indices = [tuple(f) for f in mesh.faces]
@@ -35,4 +33,3 @@ def test_polyhedron_segmentation():
     segment_result = np.array(polyhedron.segmentation()).reshape(2, -1)
 
     assert segment_result.shape == np.ndarray((2, 4032)).shape
-

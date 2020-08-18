@@ -45,24 +45,24 @@ private:
     std::vector<ValueType>& internal_vector;
 };
 
-// A modifier creating a Polyhedron from vectors of vertex and faces(vertex Ids).
+// A modifier creating a Polyhedron from vectors of vertices and faces (vertex Ids).
 template<class HDS>
 class polyhedron_builder
     : public CGAL::Modifier_base<HDS>
 {
 public:
-    polyhedron_builder(const std::vector<Point_3>& _vertexes, const IntIndices& _tris)
-        : vertexes(_vertexes)
+    polyhedron_builder(const std::vector<Point_3>& _vertices, const IntIndices& _tris)
+        : vertices(_vertices)
         , tris(_tris)
     {}
 
     void operator()(HDS& hds) {
         CGAL::Polyhedron_incremental_builder_3<HDS> B(hds, true);
 
-        B.begin_surface(vertexes.size(), tris.size());
+        B.begin_surface(vertices.size(), tris.size());
 
         // add the polyhedron vertices
-        for(const auto& p : vertexes) {
+        for(const auto& p : vertices) {
             B.add_vertex(typename HDS::Vertex::Point(p));
         }
 
@@ -79,7 +79,7 @@ public:
     }
 
 private:
-    const std::vector<Point_3>& vertexes;
+    const std::vector<Point_3>& vertices;
     const IntIndices &tris;
 };
 
@@ -88,10 +88,10 @@ py::tuple contract(Polyhedron& polyhedron) {
      * Convert an interactively contracted skeleton to a skeleton curve
      *
      * @param polyhedron Polyhedron reference.
-     * @return py::tuple containing to vector (view as Python list):
-     * return_vertices: vector containing skeleton curve vertices describe as 3D point
+     * @return py::tuple (viewed as a Python list) containing two vectors and a map:
+     * return_vertices: vector containing skeleton curve vertices described as 3D points
      * return_edges: vector containing skeleton curve edges
-     * return_correspondence: map containing skeleton mapping between vertices id and vector of surface id.
+     * return_correspondence: map containing skeleton mapping between vertex ids and vector of surface ids.
      */
 
     using Skeletonization = CGAL::Mean_curvature_flow_skeletonization<Polyhedron>;
@@ -144,7 +144,7 @@ py::tuple segmentation(Polyhedron& polyhedron) {
      * computes property-map for SDF values.
      * computes property-map for segment-ids.
      * @param polyhedron Polyhedron reference.
-     * @return py::tuple containing to vector (view as Python list):
+     * @return py::tuple (viewed as a Python list) containing two vectors:
      *     return_sdf_property_map: vector containing Shape Diameter Function property map
      *     return_segment_property_map: vector containing segment property map
      */
@@ -159,11 +159,11 @@ py::tuple segmentation(Polyhedron& polyhedron) {
     * facets of the mesh that measures the corresponding local object diameter.
     */
 
-    // create a property-map for signed distance function values
+    // Create a property-map for signed distance function values
     std::vector<double> sdf_values_vec(polyhedron.size_of_facets());
     Facet_with_id_pmap<double> sdf_property_map(sdf_values_vec);
 
-    // computing the Shape Diameter Function over a surface mesh into sdf_property_map .
+    // Computing the Shape Diameter Function over a surface mesh into sdf_property_map .
     CGAL::sdf_values(polyhedron, sdf_property_map);
 
     // Fill return_sdf_property_map
@@ -173,15 +173,16 @@ py::tuple segmentation(Polyhedron& polyhedron) {
         return_sdf_property_map.emplace_back(sdf_property_map[facet]);
      }
 
-    // create a property-map for segment-ids
+    // Create a property-map for segment-ids
     std::vector<size_t> segment_ids(polyhedron.size_of_facets());
     Facet_with_id_pmap<size_t> segment_property_map(segment_ids);
 
-    // computes the segmentation of a surface mesh given an SDF value per facet.
+    // Computes the segmentation of a surface mesh given an SDF value per facet.
     /* CGAL::segmentation_from_sdf_values function computes the segmentation of a surface mesh given an SDF value per facet.
     * This function fills a property map which associates a segment-id (in [0, number of segments -1])
     * or a cluster-id (in [0, number_of_clusters -1]) to each facet. A segment is a set of connected facets
-    * which are placed under the same cluster (see Figure 66.5).
+    * which are placed under the same cluster.
+    (See Figure 66.5, https://doc.cgal.org/latest/Surface_mesh_segmentation/index.html#fig__Cluster_vs_segment.)
     */
     CGAL::segmentation_from_sdf_values(polyhedron, sdf_property_map, segment_property_map);
 
@@ -220,9 +221,9 @@ void bind_triangle_mesh(py::module& m)
         })
         .def("contract", &contract, "Convert an interactively contracted skeleton to a skeleton curve")
         .def("segmentation",&segmentation, "Assign a unique id to each facet in the mesh")
-        .def("build",[](Polyhedron& self, const std::vector<Point_3>& vertexes, const IntIndices& indices) {
+        .def("build",[](Polyhedron& self, const std::vector<Point_3>& vertices, const IntIndices& indices) {
 
-            polyhedron_builder<HalfedgeDS> builder( vertexes, indices );
+            polyhedron_builder<HalfedgeDS> builder(vertices, indices);
             self.delegate(builder);
         })
     ;

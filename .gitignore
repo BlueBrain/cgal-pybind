@@ -1,7 +1,10 @@
 build
 *.swp
 *.swo
+*.so
 __pycache__/
 examples/venv
 dist/
-src/cgal_pybind.egg-info/
+cgal_pybind.egg-info/
+.tox
+**/.mypy_cache/
