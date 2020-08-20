@@ -15,6 +15,7 @@ pybind11_add_module(_cgal_pybind
     )
 
 find_package(Eigen3 CONFIG REQUIRED)
+
 target_link_libraries(_cgal_pybind PRIVATE Eigen3::Eigen)
 
 find_package(CGAL CONFIG REQUIRED)

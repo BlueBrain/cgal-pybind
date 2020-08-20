@@ -22,8 +22,11 @@ $> pip install .
 $> python example/test
 ```
 
-## Requierements
+
+## Requirements
 * cmake > 3.0.9
 * C++ compiler (with C++11 support)
-* trimesh Python package
 * CGAL header
+
+## Unit test requirement:
+* trimesh Python package

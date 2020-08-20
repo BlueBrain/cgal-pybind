@@ -2,6 +2,7 @@ from cgal_pybind import Polyhedron, Point_3
 import trimesh
 import numpy as np
 
+
 def test_polyhedron_contract():
     mesh = trimesh.primitives.Capsule(transform=np.array([[1, 0, 0, 2],
                                                           [0, 1, 0, 2],
@@ -33,5 +34,5 @@ def test_polyhedron_segmentation():
     polyhedron.build(mesh_vertices, mesh_face_indices)
     segment_result = np.array(polyhedron.segmentation()).reshape(2, -1)
 
-    assert segment_result.shape == np.ndarray((2, 8064)).shape
+    assert segment_result.shape == np.ndarray((2, 4032)).shape
 
