@@ -5,6 +5,7 @@
 ## Methods:
 * Skeletonization/contraction
 * Segmentation
+* Discrete authalic parametrization of surface mesh
 
 ## Installation
 ```bash
@@ -19,9 +20,9 @@ $> pip install .
 
 ## Test
 ```bash
-$> python example/test
+$> pip install tox
+$> tox
 ```
-
 
 ## Requirements
 * cmake > 3.0.9

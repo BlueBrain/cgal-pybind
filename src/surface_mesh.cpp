@@ -5,20 +5,16 @@
 #include <CGAL/Simple_cartesian.h>
 #include <CGAL/Surface_mesh.h>
 
-// { for contract
-#include <CGAL/extract_mean_curvature_flow_skeleton.h>
-// }
-
 // { for authalic
 #include <CGAL/Surface_mesh_parameterization/Discrete_authalic_parameterizer_3.h>
 #include <CGAL/Surface_mesh_parameterization/Square_border_parameterizer_3.h>
 #include <CGAL/Surface_mesh_parameterization/Error_code.h>
 #include <CGAL/Surface_mesh_parameterization/parameterize.h>
+#include <CGAL/extract_mean_curvature_flow_skeleton.h>
 // }
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
-
 
 namespace py = pybind11;
 
@@ -29,41 +25,6 @@ using Point_3 = Kernel::Point_3;
 using SurfaceMesh = CGAL::Surface_mesh<Point_3>;
 
 namespace {
-
-    py::tuple contract(SurfaceMesh& self) {
-        /**
-        * Convert an interactively contracted skeleton to a skeleton curve
-        *
-        * @param surface_mesh SurfaceMesh reference.
-        * @return py::tuple (viewed as a Python list) containing two vectors:
-        * return_vertices: vector containing skeleton curve vertices described as 3D points
-        * return_edges: vector containing skeleton curve edges
-        */
-        using Skeletonization = CGAL::Mean_curvature_flow_skeletonization<SurfaceMesh>;
-
-        Skeletonization mean_curve_skeletonizer(self);
-        mean_curve_skeletonizer.contract_until_convergence();
-
-        Skeletonization::Skeleton skeleton;
-        mean_curve_skeletonizer.convert_to_skeleton(skeleton);
-
-        std::vector<std::tuple<double, double, double>> return_vertices;
-        for (const auto& v : CGAL::make_range(vertices(skeleton)))
-        {
-            return_vertices.emplace_back(skeleton[v].point[0],
-                                            skeleton[v].point[1],
-                                            skeleton[v].point[2]
-                                            );
-        }
-
-        std::vector<std::pair<int, int>> return_edges;
-        for (const auto& e : CGAL::make_range(edges(skeleton)))
-        {
-            return_edges.emplace_back(source(e, skeleton), target(e, skeleton));
-        }
-
-        return py::make_tuple(return_vertices, return_edges);
-    }
 
     // From https://doc.cgal.org/latest/Surface_mesh_parameterization/index.html#title8:
     // The Discrete Authalic parameterization method has been introduced by Desbrun et al. [2].
@@ -154,7 +115,6 @@ void bind_surface_mesh(py::module& m)
         .def("area", [](SurfaceMesh& self) {
              return CGAL::Polygon_mesh_processing::area(self);
         }, "mesh surface area")
-        .def("contract", &contract,  "Convert an interactively contracted skeleton to a skeleton curve")
         .def("authalic", [](SurfaceMesh& self) {
             return py::make_tuple(run_discrete_authalic(self));
         }, "Flatten a 3D surface mesh while minimizing the area distortion locally");
