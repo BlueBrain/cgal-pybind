@@ -2,6 +2,7 @@
 #include <string>
 #include <utility> // std::pair
 #include <vector>
+#include <array>
 
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/extract_mean_curvature_flow_skeleton.h>
@@ -11,13 +12,14 @@
 #include <CGAL/Polyhedron_items_with_id_3.h>
 
 #include <pybind11/pybind11.h>
+#include <pybind11/numpy.h>
 #include <pybind11/stl.h>
 
 namespace py = pybind11;
 
 using std::size_t;
 
-using IntIndices = std::vector<std::tuple<int, int, int>>;
+using IntIndices = std::vector<std::array<size_t, 3>>;
 
 using Kernel = CGAL::Exact_predicates_inexact_constructions_kernel;
 using Point_3 = CGAL::Point_3<Kernel>;
@@ -61,18 +63,24 @@ public:
 
         B.begin_surface(vertices.size(), tris.size());
 
-        // add the polyhedron vertices
-        for(const auto& p : vertices) {
-            B.add_vertex(typename HDS::Vertex::Point(p));
+        // add the polyhedron vertices and their ids
+        size_t vertex_index = 0;
+        for(const auto& point : vertices) {
+            auto vertex = B.add_vertex(point);
+            vertex->id() = vertex_index++;
         }
 
-        // add the polyhedron triangles
+        // add the polyhedron triangles and their ids
+        size_t facet_index = 0;
         for(auto [v0, v1, v2] : tris) {
-            B.begin_facet();
+
+            auto facet = B.begin_facet();
             B.add_vertex_to_facet(v0);
             B.add_vertex_to_facet(v1);
             B.add_vertex_to_facet(v2);
             B.end_facet();
+
+            facet->id() = facet_index++;
         }
 
         B.end_surface();
@@ -97,12 +105,14 @@ py::tuple contract(Polyhedron& polyhedron) {
     using Skeletonization = CGAL::Mean_curvature_flow_skeletonization<Polyhedron>;
 
     Skeletonization mean_curve_skeletonizer(polyhedron);
+
     mean_curve_skeletonizer.contract_until_convergence();
 
     Skeletonization::Skeleton skeleton;
     mean_curve_skeletonizer.convert_to_skeleton(skeleton);
 
     std::vector<std::tuple<double, double, double>> return_vertices;
+    return_vertices.reserve(boost::num_vertices(skeleton));
     for (const auto& v : CGAL::make_range(vertices(skeleton)))
     {
         return_vertices.emplace_back(skeleton[v].point[0],
@@ -112,15 +122,10 @@ py::tuple contract(Polyhedron& polyhedron) {
     }
 
     std::vector<std::pair<int, int>> return_edges;
+    return_edges.reserve(boost::num_edges(skeleton));
     for (const auto& e : CGAL::make_range(edges(skeleton)))
     {
         return_edges.emplace_back(source(e, skeleton), target(e, skeleton));
-    }
-
-    size_t index = 0;
-    for(auto& v : CGAL::make_range(vertices(polyhedron)))
-    {
-        v->id() = index++;
     }
 
     // Output skeleton points and the corresponding surface points
@@ -134,7 +139,11 @@ py::tuple contract(Polyhedron& polyhedron) {
         return_correspondence.insert({v, vector_surface_id});
     }
 
-    return py::make_tuple(return_vertices, return_edges, return_correspondence);
+    return py::make_tuple(
+        py::array(py::cast(return_vertices)),
+        py::array(py::cast(return_edges)),
+        return_correspondence
+    );
 }
 
 /*---------------------------------------------------*/
@@ -145,33 +154,21 @@ py::tuple segmentation(Polyhedron& polyhedron) {
      * computes property-map for segment-ids.
      * @param polyhedron Polyhedron reference.
      * @return py::tuple (viewed as a Python list) containing two vectors:
-     *     return_sdf_property_map: vector containing Shape Diameter Function property map
-     *     return_segment_property_map: vector containing segment property map
+     *     facet_shape_diameters: vector containing Shape Diameter Function property map
+     *     facet_segment_ids: vector containing segment property map
      */
-    // assign id field for each facet
-    size_t facet_id = 0;
-    for (auto facet = polyhedron.facets_begin(); facet != polyhedron.facets_end(); ++facet) {
-        facet->id() = facet_id++;
-    }
 
     /* The Shape Diameter Function provides a connection between the surface mesh and the
     * volume of the subtended 3D bounded object. More specifically, the SDF is a scalar-valued function defined on
     * facets of the mesh that measures the corresponding local object diameter.
     */
 
-    // Create a property-map for signed distance function values
+    // Create a property-map for shape diameters
     std::vector<double> sdf_values_vec(polyhedron.size_of_facets());
     Facet_with_id_pmap<double> sdf_property_map(sdf_values_vec);
 
     // Computing the Shape Diameter Function over a surface mesh into sdf_property_map .
     CGAL::sdf_values(polyhedron, sdf_property_map);
-
-    // Fill return_sdf_property_map
-    std::vector<std::tuple<double>> return_sdf_property_map;
-    return_sdf_property_map.reserve(polyhedron.size_of_facets());
-    for(auto facet = polyhedron.facets_begin(); facet != polyhedron.facets_end(); ++facet){
-        return_sdf_property_map.emplace_back(sdf_property_map[facet]);
-     }
 
     // Create a property-map for segment-ids
     std::vector<size_t> segment_ids(polyhedron.size_of_facets());
@@ -186,15 +183,23 @@ py::tuple segmentation(Polyhedron& polyhedron) {
     */
     CGAL::segmentation_from_sdf_values(polyhedron, sdf_property_map, segment_property_map);
 
-    // Fill return_segment_property_map
-    std::vector<std::tuple<size_t>> return_segment_property_map;
-    return_segment_property_map.reserve(polyhedron.size_of_facets());
+    // Fill the shape diameter and segment id arrays per mesh face
+
+    std::vector<double> facet_shape_diameters;
+    facet_shape_diameters.reserve(polyhedron.size_of_facets());
+
+    std::vector<size_t> facet_segment_ids;
+    facet_segment_ids.reserve(polyhedron.size_of_facets());
 
     for(auto facet = polyhedron.facets_begin(); facet != polyhedron.facets_end(); ++facet){
-        return_segment_property_map.emplace_back(segment_property_map[facet]);
-    }
+        facet_shape_diameters.emplace_back(sdf_property_map[facet]);
+        facet_segment_ids.emplace_back(segment_property_map[facet]);
+     }
 
-    return py::make_tuple(return_sdf_property_map, return_segment_property_map);
+    return py::make_tuple(
+        py::array(py::cast(facet_shape_diameters)),
+        py::array(py::cast(facet_segment_ids))
+    );
 }
 
 
@@ -220,11 +225,81 @@ void bind_triangle_mesh(py::module& m)
             input >> self;
         })
         .def("contract", &contract, "Convert an interactively contracted skeleton to a skeleton curve")
-        .def("segmentation",&segmentation, "Assign a unique id to each facet in the mesh")
-        .def("build",[](Polyhedron& self, const std::vector<Point_3>& vertices, const IntIndices& indices) {
+        .def("segmentation", &segmentation, "Assign a unique id to each facet in the mesh")
+        .def("build", [](Polyhedron& self, py::array_t<double> vertices, py::array_t<size_t> faces) {
 
-            polyhedron_builder<HalfedgeDS> builder(vertices, indices);
+            // https://pybind11.readthedocs.io/en/stable/advanced/pycpp/numpy.html#direct-access
+            auto r1 = vertices.unchecked<>();
+
+            std::vector<Point_3> builder_vertices;
+            builder_vertices.reserve(r1.shape(0));
+
+            for(py::ssize_t i = 0; i < r1.shape(0); ++i)
+                builder_vertices.emplace_back(
+                    Point_3(r1(i, 0), r1(i, 1), r1(i, 2)));
+
+            auto r2 = faces.unchecked<>();
+
+            IntIndices builder_faces;
+            builder_faces.reserve(r2.shape(0));
+
+            for(py::ssize_t i = 0; i < r2.shape(0); ++i)
+                builder_faces.push_back({r2(i, 0), r2(i, 1), r2(i, 2)});
+
+            polyhedron_builder<HalfedgeDS> builder(builder_vertices, builder_faces);
             self.delegate(builder);
+        })
+        .def_property_readonly("vertices",[](Polyhedron& self){
+
+            std::vector<std::tuple<double, double, double>> verts;
+            verts.reserve(self.size_of_vertices());
+
+            for(auto v = self.vertices_begin(); v != self.vertices_end(); v++)
+            {
+                auto& p = v->point();
+                verts.emplace_back(p.x(), p.y(), p.z());
+            }
+
+            return py::array(py::cast(verts));
+
+        })
+        .def_property_readonly("faces", [](Polyhedron& self){
+
+            std::vector<std::tuple<size_t, size_t, size_t>> faces;
+            faces.reserve(self.size_of_facets());
+
+            for(auto facet = self.facets_begin(); facet != self.facets_end(); facet++)
+            {
+                auto he = facet->halfedge();
+
+                faces.emplace_back(
+                    he->vertex()->id(),
+                    he->next()->vertex()->id(),
+                    he->opposite()->vertex()->id()
+                );
+            }
+
+            return py::array(py::cast(faces));
+        })
+        .def_property_readonly("vertex_ids", [](Polyhedron& self){
+
+            std::vector<size_t> vertex_ids;
+            vertex_ids.reserve(self.size_of_vertices());
+
+            for(auto vertex = self.vertices_begin(); vertex != self.vertices_end(); vertex++)
+                vertex_ids.emplace_back(vertex->id());
+
+            return py::array(py::cast(vertex_ids));
+        })
+        .def_property_readonly("face_ids", [](Polyhedron& self){
+
+            std::vector<size_t> face_ids;
+            face_ids.reserve(self.size_of_facets());
+
+            for(auto facet = self.facets_begin(); facet != self.facets_end(); facet++)
+                face_ids.emplace_back(facet->id());
+
+            return py::array(py::cast(face_ids));
         })
     ;
 }

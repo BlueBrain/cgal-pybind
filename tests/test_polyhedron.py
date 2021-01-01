@@ -1,35 +1,55 @@
-from cgal_pybind import Polyhedron, Point_3
-import trimesh
 import numpy as np
+from numpy import testing as npt
+import pytest
+import trimesh
+from cgal_pybind import Polyhedron
 
 
-def test_polyhedron_contract():
-    mesh = trimesh.primitives.Capsule(
+@pytest.fixture
+def mesh():
+    return trimesh.primitives.Capsule(
         transform=np.array([[1, 0, 0, 2], [0, 1, 0, 2], [0, 0, 1, 2], [0, 0, 0, 1],])
     )
-    # TODO: add_vertices/add_faces should be more efficient
-    mesh_vertices = [Point_3(v[0], v[1], v[2]) for v in mesh.vertices]
-    mesh_face_indices = [tuple(f) for f in mesh.faces]
+    return mesh
 
+
+@pytest.fixture(scope='function')
+def polyhedron(mesh):
     polyhedron = Polyhedron()
-    polyhedron.build(mesh_vertices, mesh_face_indices)
+    polyhedron.build(mesh.vertices, mesh.faces)
+    return polyhedron
+
+
+def test_polyhedron_build(mesh, polyhedron):
+
+    npt.assert_allclose(mesh.vertices, polyhedron.vertices)
+    npt.assert_array_equal(mesh.faces, polyhedron.faces)
+
+    npt.assert_array_equal(polyhedron.vertex_ids, np.arange(len(mesh.vertices), dtype=np.int))
+    npt.assert_array_equal(polyhedron.face_ids, np.arange(len(mesh.faces), dtype=np.int))
+
+
+def test_polyhedron_contract(polyhedron):
+
     vertices, edges, correspondence, = polyhedron.contract()
-    vertices = np.asarray(vertices).reshape((-1, 3))
-    edges = np.asarray(edges)
-    assert vertices.shape[0] > edges.shape[0]
+
+    assert isinstance(vertices, np.ndarray)
+    assert vertices.ndim == 2 and vertices.shape[1] == 3
+
+    assert isinstance(edges, np.ndarray)
+    assert edges.ndim == 2 and edges.shape[1] == 2
+
     assert len(correspondence.keys()) == vertices.shape[0]
 
 
-def test_polyhedron_segmentation():
-    mesh = trimesh.primitives.Capsule(
-        transform=np.array([[1, 0, 0, 2], [0, 1, 0, 2], [0, 0, 1, 2], [0, 0, 0, 1],])
-    )
-    # TODO: add_vertices/add_faces should be more efficient
-    mesh_vertices = [Point_3(v[0], v[1], v[2]) for v in mesh.vertices]
-    mesh_face_indices = [tuple(f) for f in mesh.faces]
+def test_polyhedron_segmentation(polyhedron):
 
-    polyhedron = Polyhedron()
-    polyhedron.build(mesh_vertices, mesh_face_indices)
-    segment_result = np.array(polyhedron.segmentation()).reshape(2, -1)
+    shape_diameters, segment_ids = polyhedron.segmentation()
 
-    assert segment_result.shape == np.ndarray((2, 4032)).shape
+    assert isinstance(shape_diameters, np.ndarray)
+    assert shape_diameters.ndim == 1
+    assert isinstance(segment_ids, np.ndarray)
+    assert segment_ids.ndim == 1
+
+    assert shape_diameters.size == 4032
+    assert segment_ids.size == 4032
