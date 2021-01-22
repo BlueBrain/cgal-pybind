@@ -5,7 +5,7 @@ namespace py = pybind11;
 void bind_point(py::module&);
 void bind_triangle_mesh(py::module&);
 void bind_surface_mesh(py::module&);
-
+void bind_streamlines_intersections(py::module&);
 
 PYBIND11_MODULE(_cgal_pybind, m)
 {
@@ -13,4 +13,5 @@ PYBIND11_MODULE(_cgal_pybind, m)
     bind_point(m);
     bind_triangle_mesh(m);
     bind_surface_mesh(m);
+    bind_streamlines_intersections(m);
 }
