@@ -10,7 +10,7 @@ import imp
 
 VERSION = imp.load_source("cgal_pybind.version", "cgal_pybind/version.py").VERSION
 REQUIRED_NUMPY_VERSION = "numpy>=1.12.0"
-REQUIRED_TRIMESH_VERSION = "trimesh>=3.6.18"
+REQUIRED_TRIMESH_VERSION = "trimesh>=2.38.10"  # For unit tests only
 MIN_CPU_CORES = 2
 
 
@@ -76,7 +76,10 @@ class CMakeBuild(build_ext):
         )
 
 
-install_requires = [REQUIRED_NUMPY_VERSION, REQUIRED_TRIMESH_VERSION]
+install_requires = [REQUIRED_NUMPY_VERSION]
+extras_require = {
+    "tests": [REQUIRED_TRIMESH_VERSION, "pytest", "mock"]
+}
 
 
 setup(
@@ -91,4 +94,5 @@ setup(
     cmdclass=dict(build_ext=CMakeBuild),
     zip_safe=False,
     install_requires=install_requires,
+    extras_require=extras_require
 )
