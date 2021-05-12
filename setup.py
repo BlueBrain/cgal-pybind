@@ -86,6 +86,7 @@ setup(
     name='cgal_pybind',
     version=VERSION,
     author='BBP',
+    url='https://bbpgitlab.epfl.ch/nse/cgal-pybind',
     author_email='jean.jacquemier@epfl.ch',
     description='A Python binding for some CGAL classes',
     long_description='',
