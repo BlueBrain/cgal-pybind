@@ -83,7 +83,7 @@ extras_require = {
 
 
 setup(
-    name='cgal_pybind',
+    name='cgal-pybind',
     version=VERSION,
     url='https://bbpgitlab.epfl.ch/nse/cgal-pybind',
     author='BBP',
