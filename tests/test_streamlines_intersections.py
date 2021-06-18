@@ -14,9 +14,9 @@ def test_compute_streamlines_intersections():
 
     voxel_to_point_map = compute_streamlines_intersections(
         layers=layers,
-        vector_field=direction_vectors,
         offset=np.array([1.0, 2.0, 3.0], dtype=np.float32),
         voxel_dimensions=np.array([2.0, 2.0, 2.0], dtype=np.float32),
+        vector_field=direction_vectors,
         layer_1=np.uint8(2),
         layer_2=np.uint8(3),
     )

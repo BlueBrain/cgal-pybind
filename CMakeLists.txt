@@ -13,7 +13,10 @@ pybind11_add_module(_cgal_pybind
     ${CMAKE_CURRENT_SOURCE_DIR}/src/point.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/polyhedron.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/surface_mesh.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/utils.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/utils.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/streamlines_intersections.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/slice_volume.cpp
     )
 
 find_package(Eigen3 CONFIG REQUIRED)
