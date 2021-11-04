@@ -2,6 +2,7 @@
 #include <stdexcept> // std::invalid_argument
 #include <vector>
 
+#include <assert.h>
 
 #include "utils.hpp"
 
@@ -12,8 +13,12 @@ This operation is used repeatedly in the computation of m-type volumetric densit
 atlas-building-tools/atlas_building_tools/cell_densities. The splitting into slices is implemented
 as a python-C++ binding for efficiency reasons.
 
-Note that is also used in atlas-building-tools/atlas_building_tools/region_splitter for the splitting of layer 2/3
-into layer 2 and layer 3.
+For when slicing, we assume that the input vector field contains no NaN values and no zero
+vectors inside the region of interest. More: vectors from the input vector field are assumed to be approximately of the
+same positive length. A common input is a field of unit direction vectors.
+
+Note that volume slicing is also used in atlas-building-tools/atlas_building_tools/region_splitter for the splitting of
+layer 2/3 into layer 2 and layer 3.
 */
 
 namespace py = pybind11;
@@ -22,6 +27,7 @@ using utils::Float;
 using utils::Index_3;
 using utils::Point_3;
 using utils::Vector_3;
+
 
 /**
  * Class handling the splitting of a 3D volume into slices with prescribed thicknesses.
@@ -39,7 +45,7 @@ using utils::Vector_3;
  */
 class Slicer {
 private:
-    const py::array_t<bool, 3> volume_;
+    const py::array_t<bool, 3> &volume_;
     utils::VectorInterpolator interpolator_;
     std::vector<Float> thicknesses_;
     Float resolution_;
@@ -121,6 +127,9 @@ private:
 
         while (interpolator_.IsInsideRegion(current_index) && is_in_volume) {
             const Vector_3 vector = interpolator_.InterpolateVector(current_point) * direction;
+            // NAN and zero vectors aren't supported.
+            assert(!std::isnan(vector[0]) && !std::isnan(vector[1]) && !std::isnan(vector[2]));
+            assert(vector[0] != 0.0 || vector[1] != 0.0 || vector[2] != 0.0);
             current_point += vector;
             ++streamline_length;
             current_index = interpolator_.PhysicalPointToIndex(current_point);
@@ -168,6 +177,9 @@ public:
             for (py::ssize_t j = 0; j < volume.shape(1); ++j) {
                 for (py::ssize_t k = 0; k < volume.shape(2); ++k) {
                     if (volume(i, j, k)) {
+                        utils::ThrowOnInvalidVector(interpolator_.GetVector(Index_3(i, j, k)),
+                          "The vector field should not contain any NAN or zero vectors "
+                          "on the domain defined by the volume mask.");
                         slices_(i, j, k) = FindSliceIndex({i, j, k});
                     } else {
                         slices_(i, j, k) = 0;
@@ -196,7 +208,8 @@ public:
  * @param voxel_dimensions float array of shape (3,) holding dimensions of voxels of the volume `volume`.
  *  This is used to compute point coordinates in the absolute (world) 3D frame.
  * @param vector_field float array of shape (W, H, D, 3) where (W, H, D) is the shape of `volume`.
- *  3D Vector field defined over `volume` domain used to draw the streamlines.
+ *  3D Vector field defined over `volume` domain used to draw the streamlines. It should not contain any zero or NAN
+ *  vectors inside the `volume` domain.
  * @param thicknesses 1D vector of slice relative thicknesses. The vector's size is the number of slices to create.
  * Note that `offset and `voxel_dimensions` are the attributes of the voxcell.VoxelData object corresponding to
  * both `volume` and `vector_field`.
@@ -226,7 +239,6 @@ py::array_t<int, 3> slice_volume(
 
   return slicer_.CreateSlices();
 }
-
 
 void bind_slice_volume(py::module& m)
 {

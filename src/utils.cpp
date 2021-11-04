@@ -96,5 +96,16 @@ namespace utils {
       return TrilinearInterpolation(origin, vertex_vectors);
    };
 
+void ThrowOnInvalidVector(const Vector_3 &v, std::string message) {
+  if (std::isnan(v[0]) || std::isnan(v[1]) || std::isnan(v[2])) {
+        message = "Found unexpected NAN vector. " + message;
+        throw InvalidVectorError(message);
+    }
+    if (v[0] == 0.0 && v[1] == 0.0 && v[2] == 0.0) {
+        message = "Found unexpected zero vector. " + message;
+        throw InvalidVectorError(message);
+    }
+}
+
 
 } // namespace::utils

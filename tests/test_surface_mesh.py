@@ -1,6 +1,7 @@
-from cgal_pybind import SurfaceMesh, Point_3
-import trimesh
 import numpy as np
+import trimesh
+
+from cgal_pybind import Point_3, SurfaceMesh
 
 
 def test_authalic():

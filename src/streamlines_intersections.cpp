@@ -1,6 +1,9 @@
+#include <cmath>
 #include <optional>
 #include <vector>
 #include <string>
+
+#include <assert.h>
 
 #include "utils.hpp"
 
@@ -13,6 +16,10 @@
 // We call streamline a parametrized curve which follows the stream of a vector field, i.e., the curve time derivatives
 // are imposed by the vector field. In our discrete setting, streamlines are polygonal lines obtained by adding up vectors
 // of a discrete 3D vector field.
+//
+// For the computation of streamlines, we assume that the input vector field contains no NaN values and no zero
+// vectors inside the region of interest.
+
 
 namespace py = pybind11;
 
@@ -93,6 +100,9 @@ namespace flatmap {
       const Float direction = 0.5 * (forward ? 1.0 : -1.0);
 
       const Vector_3 &vector = interpolator_.GetVector(previous_index) * direction;
+      // NAN and zero vectors aren't supported.
+      assert(!std::isnan(vector[0]) && !std::isnan(vector[1]) && !std::isnan(vector[2]));
+      assert(vector[0] != 0.0 || vector[1] != 0.0 || vector[2] != 0.0);
       Point_3 current_point(previous_point + vector);
       Index_3 current_index = interpolator_.PhysicalPointToIndex(current_point);
       if (!interpolator_.IsInsideRegion(current_index)) return std::nullopt;
@@ -200,6 +210,10 @@ namespace flatmap {
               for (int l = 0; l < 3; ++l) voxel_to_point_map_(i, j, k, l) = NAN;
               if (layers(i, j, k) != 0) {
                 const Index_3 voxel_index(i, j, k);
+                utils::ThrowOnInvalidVector(interpolator_.GetVector(voxel_index),
+                  "The vector field should not contain any NAN or zero vector "
+                  "on the domain defined by the layers volume."
+                );
                 const Point_3 &point = FindClosestPoint(voxel_index);
                 for (int l = 0; l < 3; ++l) voxel_to_point_map_(i, j, k, l) = point[l];
               }
@@ -236,7 +250,8 @@ py::array_t<flatmap::Float, 4> compute_streamlines_intersections(
      * @param voxel_dimensions float array of shape (3,) holding dimensions of voxels of the volume `layers`.
      *  This is used to compute point coordinates in the absolute (world) 3D frame.
      * @param vector_field float array of shape (W, H, D, 3) where (W, H, D) is the shape of `layers`.
-     *  3D Vector field defined over `layers` domain used to draw the streamlines.
+     *  3D Vector field defined over `layers` domain used to draw the streamlines. It should not contain any zero or NAN
+     *  vectors inside the `layers` domain.
      * @param layer_1 (non-zero) layer index of the first layer.
      * @param layer_2 (non-zero) layer index of the second layer. The layers with index `layer_1` and `layer_2` defines a
      * (voxellized) boundary surface to be intersected with the streamlines of `vector_field`.
@@ -275,4 +290,12 @@ void bind_streamlines_intersections(py::module& m)
       py::arg("layer_1"), // scalar of type np.uint8
       py::arg("layer_2") // scalar of type np.uint8
     );
+    static py::exception<utils::InvalidVectorError> exc(m, "InvalidVectorError");
+    py::register_exception_translator([](std::exception_ptr p) {
+        try {
+            if (p) std::rethrow_exception(p);
+        } catch (const utils::InvalidVectorError &e) {
+            exc(e.what());
+        }
+    });
 }

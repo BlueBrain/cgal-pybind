@@ -18,7 +18,7 @@ $> export CGAL_DIR=$PATH_TO_GIT
 $> pip install .
 ```
 
-## Test
+## Tests
 ```bash
 $> pip install tox
 $> tox
@@ -29,5 +29,9 @@ $> tox
 * C++ compiler (with C++11 support)
 * CGAL header
 
-## Unit test requirement:
+## Unit tests requirement:
 * trimesh Python package
+
+## Developer instructions
+Before each `git commit`, execute `tox -e format`. This will format code
+according to `tox.ini` configuration.

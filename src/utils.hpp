@@ -3,6 +3,7 @@
 
 #include <array>
 #include <cmath>
+#include <stdexcept> // std::runtime_error
 
 #include <CGAL/Simple_cartesian.h>
 #include <CGAL/MP_Float.h>
@@ -166,6 +167,23 @@ namespace utils {
       Index_3 PhysicalPointToIndex(const Point_3 &point) const { return transform_.PhysicalPointToIndex(point); };
       Point_3 IndexToPhysicalPoint(const Index_3 &idx) const { return transform_.IndexToPhysicalPoint(idx); };
   };
+
+/*
+Error raised if a 3D vector is deemed invalid, see ThrowOnInvalidVector,
+*/
+class InvalidVectorError : public std::runtime_error {
+    public:
+      InvalidVectorError(const std::string& what = ""): std::runtime_error(what) {};
+};
+/**
+Throws an InvalidVectorError exception if the input vector is deemed invalid, i.e. is zero or
+contains NANs.
+   * @param v 3D vector
+   * @param message additional message string appended ot the exception message.
+   *
+   * @throw InvalidVectorError if v is zero or contains NANs.
+*/
+void ThrowOnInvalidVector(const Vector_3 &v, std::string message);
 
 } // namespace::utils
 

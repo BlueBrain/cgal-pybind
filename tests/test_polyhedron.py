@@ -1,19 +1,27 @@
 import numpy as np
-from numpy import testing as npt
 import pytest
 import trimesh
+from numpy import testing as npt
+
 from cgal_pybind import Polyhedron
 
 
 @pytest.fixture
 def mesh():
     return trimesh.primitives.Capsule(
-        transform=np.array([[1, 0, 0, 2], [0, 1, 0, 2], [0, 0, 1, 2], [0, 0, 0, 1],])
+        transform=np.array(
+            [
+                [1, 0, 0, 2],
+                [0, 1, 0, 2],
+                [0, 0, 1, 2],
+                [0, 0, 0, 1],
+            ]
+        )
     )
     return mesh
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def polyhedron(mesh):
     polyhedron = Polyhedron()
     polyhedron.build(mesh.vertices, mesh.faces)
@@ -31,7 +39,11 @@ def test_polyhedron_build(mesh, polyhedron):
 
 def test_polyhedron_contract(polyhedron):
 
-    vertices, edges, correspondence, = polyhedron.contract()
+    (
+        vertices,
+        edges,
+        correspondence,
+    ) = polyhedron.contract()
 
     assert isinstance(vertices, np.ndarray)
     assert vertices.ndim == 2 and vertices.shape[1] == 3
