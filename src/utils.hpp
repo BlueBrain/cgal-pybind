@@ -109,6 +109,13 @@ namespace utils {
           voxel_dimensions_[1] * idx[1],
           voxel_dimensions_[2] * idx[2]) + offset_;
       };
+     Point_3 IndexToVoxelCentroid(const Index_3 &idx) const {
+        return Point_3(
+          voxel_dimensions_[0] * (idx[0] + 0.5),
+          voxel_dimensions_[1] * (idx[1] + 0.5),
+          voxel_dimensions_[2] * (idx[2] + 0.5)) + offset_;
+     };
+
       Index_3 PhysicalPointToIndex(const Point_3 &p) const {
         const Point_3 &q = Floor(PointToContinuousIndex(p));
         return Index_3(
@@ -117,6 +124,7 @@ namespace utils {
           static_cast<py::ssize_t>(q[2])
         );
       }
+
   };
   /**
     * A utility wrapper around an array of type py::array_t<Float, 4> to be interpreted

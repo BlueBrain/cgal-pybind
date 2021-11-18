@@ -17,6 +17,7 @@ pybind11_add_module(_cgal_pybind
     ${CMAKE_CURRENT_SOURCE_DIR}/src/utils.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/streamlines_intersections.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/slice_volume.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/thickness_estimates.cpp
     )
 
 find_package(Eigen3 CONFIG REQUIRED)

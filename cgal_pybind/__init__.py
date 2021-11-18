@@ -8,5 +8,6 @@ from ._cgal_pybind import (
     Polyhedron,
     SurfaceMesh,
     compute_streamlines_intersections,
-    slice_volume,
+    estimate_thicknesses,
+    slice_volume
 )
