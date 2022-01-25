@@ -1,12 +1,20 @@
-import imp
 import os
 import subprocess
 import sys
 
 from setuptools import Extension, setup
 from setuptools.command.build_ext import build_ext
+import importlib.util
 
-VERSION = imp.load_source("cgal_pybind.version", "cgal_pybind/version.py").VERSION
+
+spec = importlib.util.spec_from_file_location(
+    "cgal_pybind.version",
+    "cgal_pybind/version.py",
+)
+module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)
+VERSION = module.__version__
+
 REQUIRED_NUMPY_VERSION = "numpy>=1.12.0"
 REQUIRED_TRIMESH_VERSION = "trimesh>=2.38.10"  # For unit tests only
 MIN_CPU_CORES = 2
