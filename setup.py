@@ -4,32 +4,9 @@ import sys
 
 from setuptools import Extension, setup
 from setuptools.command.build_ext import build_ext
-import importlib.util
-
-
-spec = importlib.util.spec_from_file_location(
-    "cgal_pybind.version",
-    "cgal_pybind/version.py",
-)
-module = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(module)
-VERSION = module.__version__
 
 REQUIRED_NUMPY_VERSION = "numpy>=1.12.0"
 REQUIRED_TRIMESH_VERSION = "trimesh>=2.38.10"  # For unit tests only
-MIN_CPU_CORES = 2
-
-
-def get_cpu_count():
-    try:
-        return len(os.sched_getaffinity(0))  # linux only
-    except:
-        pass
-
-    try:
-        return os.cpu_count()  # python 3.4+
-    except:
-        return 1  # default
 
 
 class CMakeExtension(Extension):
@@ -40,14 +17,6 @@ class CMakeExtension(Extension):
 
 class CMakeBuild(build_ext):
     def run(self):
-        try:
-            _ = subprocess.check_output(["cmake", "--version"])
-        except OSError:
-            raise RuntimeError(
-                "CMake must be installed to build the following extensions: "
-                + ", ".join(e.name for e in self.extensions)
-            )
-
         for ext in self.extensions:
             self.build_extension(ext)
 
@@ -65,31 +34,27 @@ class CMakeBuild(build_ext):
         cfg = "Debug" if self.debug else "Release"
         build_args = ["--config", cfg]
 
-        cmake_args += ["-DCMAKE_BUILD_TYPE=" + cfg]
-        build_args += ["--", "-j{}".format(max(MIN_CPU_CORES, get_cpu_count()))]
+        cmake_args += ["-DCMAKE_BUILD_TYPE=" + cfg,
+                       '-GNinja',
+                       ]
 
-        env = os.environ.copy()
-        env["CXXFLAGS"] = '{} -DVERSION_INFO=\\"{}\\"'.format(
-            env.get("CXXFLAGS", ""), self.distribution.get_version()
-        )
         if not os.path.exists(self.build_temp):
             os.makedirs(self.build_temp)
-        subprocess.check_call(["cmake", ext.sourcedir] + cmake_args, cwd=self.build_temp, env=env)
+
+        subprocess.check_call(["cmake", ext.sourcedir] + cmake_args, cwd=self.build_temp)
         subprocess.check_call(["cmake", "--build", "."] + build_args, cwd=self.build_temp)
 
 
-install_requires = [REQUIRED_NUMPY_VERSION]
-extras_require = {"tests": [REQUIRED_TRIMESH_VERSION, "pytest", "mock"]}
-
+install_requires = [
+    REQUIRED_NUMPY_VERSION,
+    ]
+extras_require = {"tests": [REQUIRED_TRIMESH_VERSION, "pytest", ]}
 
 setup(
     name="cgal-pybind",
-    version=VERSION,
-    url="https://bbpgitlab.epfl.ch/nse/cgal-pybind",
-    author="BBP",
-    author_email="jean.jacquemier@epfl.ch",
-    description="A Python binding for some CGAL classes",
-    long_description="",
+    url="https://github.com/BlueBrain/cgal-pybind",
+    author="Blue Brain Project, EPFL",
+    description="Python bindings for some CGAL classes",
     packages=[
         "cgal_pybind",
     ],
@@ -100,4 +65,9 @@ setup(
     zip_safe=False,
     install_requires=install_requires,
     extras_require=extras_require,
+
+    use_scm_version=True,
+    setup_requires=[
+        'setuptools_scm',
+    ],
 )

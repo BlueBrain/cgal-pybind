@@ -1,0 +1,11 @@
+Maintainer
+----------
+* BBP/NSE
+
+Authors
+-------
+Eleftherios Zisis
+Gianluca Ficarelli
+Luc Guyot
+Mike Gevaert
+Jean Jacquemier
