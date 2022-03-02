@@ -5,7 +5,6 @@ import sys
 from setuptools import Extension, setup
 from setuptools.command.build_ext import build_ext
 
-REQUIRED_NUMPY_VERSION = "numpy>=1.12.0"
 REQUIRED_TRIMESH_VERSION = "trimesh>=2.38.10"  # For unit tests only
 
 
@@ -44,10 +43,16 @@ class CMakeBuild(build_ext):
         subprocess.check_call(["cmake", ext.sourcedir] + cmake_args, cwd=self.build_temp)
         subprocess.check_call(["cmake", "--build", "."] + build_args, cwd=self.build_temp)
 
-
+# nearly verbatim from how h5py handles is
 install_requires = [
-    REQUIRED_NUMPY_VERSION,
-    ]
+    # we only really aim to support numpy & python combinations for which
+    # there are wheels on pypi (e.g. numpy >=1.17.5 for python 3.8).
+    # but we don't want to duplicate the information in oldest-supported-numpy
+    # here, and if you can build an older numpy on a newer python
+    # numpy 1.14.5 is the first with wheels for python 3.7, our minimum python.
+    "numpy >=1.14.5",
+]
+
 extras_require = {"tests": [REQUIRED_TRIMESH_VERSION, "pytest", ]}
 
 setup(
@@ -66,8 +71,20 @@ setup(
     install_requires=install_requires,
     extras_require=extras_require,
 
-    use_scm_version=True,
     setup_requires=[
         'setuptools_scm',
+    ],
+    use_scm_version={
+        "local_scheme": "no-local-version",
+        },
+
+    classifiers=[
+        "Development Status :: 2 - Pre-Alpha",
+        "Programming Language :: Python",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
     ],
 )
