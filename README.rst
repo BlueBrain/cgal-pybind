@@ -30,6 +30,12 @@ Otherwise, use the developer instructions to try and install it that way.
 
     $ pip install cgal-pybind
 
+Examples
+========
+
+Several examples are available in the rendered ipython notebook:
+https://github.com/BlueBrain/cgal-pybind/blob/main/examples/Examples.ipynb
+
 Tests
 =====
 
