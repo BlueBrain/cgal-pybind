@@ -89,7 +89,7 @@ The development of this software was supported by funding to the Blue Brain Proj
 
 For license and authors, see LICENSE.txt and AUTHORS.txt respectively.
 
-Copyright © 2022 Blue Brain Project/EPFL
+Copyright (c) 2022-2024 Blue Brain Project/EPFL
 
 .. _CGAL: https://www.cgal.org/
 .. _pybind11: https://pybind11.readthedocs.io
