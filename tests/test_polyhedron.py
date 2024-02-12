@@ -33,8 +33,8 @@ def test_polyhedron_build(mesh, polyhedron):
     npt.assert_allclose(mesh.vertices, polyhedron.vertices)
     npt.assert_array_equal(mesh.faces, polyhedron.faces)
 
-    npt.assert_array_equal(polyhedron.vertex_ids, np.arange(len(mesh.vertices), dtype=np.int))
-    npt.assert_array_equal(polyhedron.face_ids, np.arange(len(mesh.faces), dtype=np.int))
+    npt.assert_array_equal(polyhedron.vertex_ids, np.arange(len(mesh.vertices), dtype=int))
+    npt.assert_array_equal(polyhedron.face_ids, np.arange(len(mesh.faces), dtype=int))
 
 
 def test_polyhedron_contract(polyhedron):
