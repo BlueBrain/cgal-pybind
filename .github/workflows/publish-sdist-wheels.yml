@@ -5,7 +5,7 @@ env:
   CIBW_BUILD_VERBOSITY: 3
   CIBW_BUILD: 'cp3*'
   CIBW_SKIP: 'cp35-* cp36-* *-musllinux_* *-manylinux_i686'
-  CIBW_TEST_COMMAND: ( cd {project}/python/tests; python -m unittest -v )
+  CIBW_TEST_COMMAND: "( cd {project}/tests; python -m unittest -v )"
 
 jobs:
   build_wheels:
@@ -19,14 +19,14 @@ jobs:
         os: [ubuntu-20.04, ]
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: 'true'
 
-      - uses: actions/setup-python@v2
+      - uses: actions/setup-python@v4
         name: Install Python
         with:
-          python-version: '3.7'
+          python-version: '3.8'
 
       - name: Install cibuildwheel
         run: |
@@ -47,7 +47,7 @@ jobs:
           python -m cibuildwheel --output-dir dist
 
       - name: Store wheel as artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: dist
           path: dist/*.whl
@@ -58,12 +58,12 @@ jobs:
 
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: 'true'
 
       - name: Set up Python 3.8
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: 3.8
 
@@ -75,7 +75,7 @@ jobs:
           ./ci/python_build_sdist.sh
 
       - name: Store sdist as artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: dist
           path: dist/*.tar.gz
@@ -89,7 +89,7 @@ jobs:
 
     steps:
       - name: Download artifacts produced during the build_wheels and build_sdist jobs
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: dist
           path: dist/
