@@ -1,3 +1,4 @@
+from pathlib import Path
 import numpy as np
 import pytest
 import trimesh
@@ -5,20 +6,11 @@ from numpy import testing as npt
 
 from cgal_pybind import Polyhedron
 
+TESTS_DIR = Path(__file__).parent
 
 @pytest.fixture
 def mesh():
-    return trimesh.primitives.Capsule(
-        transform=np.array(
-            [
-                [1, 0, 0, 2],
-                [0, 1, 0, 2],
-                [0, 0, 1, 2],
-                [0, 0, 0, 1],
-            ]
-        )
-    )
-    return mesh
+    return trimesh.load(TESTS_DIR / "capsule.stl")
 
 
 @pytest.fixture(scope="function")
