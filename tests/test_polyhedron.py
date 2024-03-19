@@ -1,4 +1,5 @@
 from pathlib import Path
+
 import numpy as np
 import pytest
 import trimesh
@@ -7,6 +8,7 @@ from numpy import testing as npt
 from cgal_pybind import Polyhedron
 
 TESTS_DIR = Path(__file__).parent
+
 
 @pytest.fixture
 def mesh():

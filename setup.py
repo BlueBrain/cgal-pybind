@@ -33,15 +33,17 @@ class CMakeBuild(build_ext):
         cfg = "Debug" if self.debug else "Release"
         build_args = ["--config", cfg]
 
-        cmake_args += ["-DCMAKE_BUILD_TYPE=" + cfg,
-                       '-GNinja',
-                       ]
+        cmake_args += [
+            "-DCMAKE_BUILD_TYPE=" + cfg,
+            "-GNinja",
+        ]
 
         if not os.path.exists(self.build_temp):
             os.makedirs(self.build_temp)
 
         subprocess.check_call(["cmake", ext.sourcedir] + cmake_args, cwd=self.build_temp)
         subprocess.check_call(["cmake", "--build", "."] + build_args, cwd=self.build_temp)
+
 
 # nearly verbatim from how h5py handles is
 install_requires = [
@@ -53,7 +55,12 @@ install_requires = [
     "numpy >=1.14.5",
 ]
 
-extras_require = {"tests": [REQUIRED_TRIMESH_VERSION, "pytest", ]}
+extras_require = {
+    "tests": [
+        REQUIRED_TRIMESH_VERSION,
+        "pytest",
+    ]
+}
 
 setup(
     name="cgal-pybind",
@@ -70,14 +77,12 @@ setup(
     zip_safe=False,
     install_requires=install_requires,
     extras_require=extras_require,
-
     setup_requires=[
-        'setuptools_scm',
+        "setuptools_scm",
     ],
     use_scm_version={
         "local_scheme": "no-local-version",
-        },
-
+    },
     classifiers=[
         "Development Status :: 2 - Pre-Alpha",
         "Programming Language :: Python",
