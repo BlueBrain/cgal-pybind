@@ -4,8 +4,8 @@ on: [pull_request, push]
 env:
   CIBW_BUILD_VERBOSITY: 3
   CIBW_BUILD: 'cp3*'
-  CIBW_SKIP: 'cp35-* cp36-* *-musllinux_* *-manylinux_i686 cp312-*'
-  CIBW_TEST_REQUIRES: pytest trimesh==3.13.1 numpy
+  CIBW_SKIP: 'cp35-* cp36-* cp37-* *-musllinux_* *-manylinux_i686'
+  CIBW_TEST_REQUIRES: pytest trimesh numpy
   CIBW_TEST_COMMAND: "pytest {project}/tests"
 
 jobs:
