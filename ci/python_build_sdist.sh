@@ -18,8 +18,14 @@ set +u  # ignore missing variables in activation script
 source "$BIN/activate"
 set -u
 
-"$BIN/pip" install -U setuptools pip
-"$BIN/python" setup.py sdist
+"$BIN/pip" install -U pipx
+
+# Build distribution
+"$BIN/pipx" run build --sdist
+
+# Check metadata
+"$BIN/pipx" run twine check dist/*
+
 
 ls -al dist
 
