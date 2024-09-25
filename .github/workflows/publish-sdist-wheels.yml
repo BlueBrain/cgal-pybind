@@ -105,4 +105,4 @@ jobs:
         with:
           user: __token__
           password: ${{ secrets.PYPI_PASSWORD }}
-          packages_dir: dist/
+          packages-dir: dist/
