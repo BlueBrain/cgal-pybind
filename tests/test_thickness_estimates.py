@@ -117,7 +117,7 @@ def test_thickness_estimates__diagonal_layers():
     # because we want to calculate distances along the diagonal it is nice to choose
     # the voxel size so that the diagonal is a rational number:
     # the xy diagonal of the voxel will be l = sqrt(2) * x = 2 * 10 = 20um
-    voxel_dimensions = np.array([10.0, 10.0, 10.0], dtype=np.float32) * np.sqrt(2)
+    voxel_dimensions = np.array([10.0, 10.0, 10.0], dtype=np.float32) * np.sqrt(2).astype(np.float32)
 
     # to avoid overlapping with the grid we use an irrational resolution
     # if we used a multiple of the
