@@ -27,7 +27,7 @@ jobs:
       - uses: actions/setup-python@v4
         name: Install Python
         with:
-          python-version: '3.8'
+          python-version: '3.12'
 
       - name: Install cibuildwheel
         run: |
@@ -50,7 +50,7 @@ jobs:
       - name: Store wheel as artifact
         uses: actions/upload-artifact@v3
         with:
-          name: dist
+          name: dist-wheels-${{ matrix.os }}
           path: dist/*.whl
 
   build_sdist:
@@ -63,10 +63,10 @@ jobs:
         with:
           submodules: 'true'
 
-      - name: Set up Python 3.8
+      - name: Set up Python 3.12
         uses: actions/setup-python@v4
         with:
-          python-version: 3.8
+          python-version: 3.12
 
       - name: Install packages
         run: sudo apt-get update && sudo apt-get install libcgal-dev libeigen3-dev
@@ -76,9 +76,9 @@ jobs:
           ./ci/python_build_sdist.sh
 
       - name: Store sdist as artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: dist
+          name: dist-sdist
           path: dist/*.tar.gz
 
   upload_artifacts:
@@ -90,17 +90,19 @@ jobs:
 
     steps:
       - name: Download artifacts produced during the build_wheels and build_sdist jobs
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
-          name: dist
+          name: dist-*
           path: dist/
+          merge-multiple: true
+
 
       - name: Display structure of downloaded files
         run: ls -R
         working-directory: dist
 
       - name: Publish package to PyPI
-        uses: pypa/gh-action-pypi-publish@master
+        uses: pypa/gh-action-pypi-publish@release/v1
         with:
           user: __token__
           password: ${{ secrets.PYPI_PASSWORD }}
