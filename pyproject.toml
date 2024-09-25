@@ -3,7 +3,57 @@ requires = [
     "cmake",
     "ninja",
     "oldest-supported-numpy",
-    "setuptools",
+    "setuptools>=42",
+    "setuptools_scm>=8",
     "wheel",
 ]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "cgal-pybind"
+description = "Python bindings for some CGAL classes"
+readme = { file = "README.rst", content-type = "text/x-rst" }
+requires-python = ">=3.8"
+license = { file = "LISENSE.txt" }
+authors = [
+  {  name = "Blue Brain Project, EPFL" }
+]
+dependencies = [
+# nearly verbatim from how h5py handles is
+# we only really aim to support numpy & python combinations for which
+# there are wheels on pypi (e.g. numpy >=1.17.5 for python 3.8).
+# but we don't want to duplicate the information in oldest-supported-numpy
+# here, and if you can build an older numpy on a newer python
+# numpy 1.14.5 is the first with wheels for python 3.7, our minimum python.
+"numpy >=1.14.5",
+]
+classifiers = [
+  "Development Status :: 2 - Pre-Alpha",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+]
+dynamic = ["version"]
+
+[project.optional-dependencies]
+tests = [
+  "trimesh>=2.38.10",
+  "pytest"
+]
+
+[project.urls]
+Homepage = "https://github.com/BlueBrain/cgal-pybind"
+Repository = "https://github.com/BlueBrain/cgal-pybind"
+Issues = "https://github.com/BlueBrain/cgal-pybind/issues"
+Tracker = "https://github.com/BlueBrain/cgal-pybind/issues"
+
+[tool.setuptools.packages.find]
+include = ["cgal_pybind"]
+namespaces = false
+
+[tool.setuptools_scm]
+local_scheme = "no-local-version"
