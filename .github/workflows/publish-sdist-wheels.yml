@@ -20,12 +20,12 @@ jobs:
         os: [ubuntu-20.04, ]
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: 'true'
 
-      - uses: actions/setup-python@v4
-        name: Install Python
+      - uses: actions/setup-python@v5
+        name: Install Python 3.12
         with:
           python-version: '3.12'
 
@@ -48,7 +48,7 @@ jobs:
           python -m cibuildwheel --output-dir dist
 
       - name: Store wheel as artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: dist-wheels-${{ matrix.os }}
           path: dist/*.whl
@@ -59,12 +59,12 @@ jobs:
 
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: 'true'
 
       - name: Set up Python 3.12
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: 3.12
 
@@ -92,10 +92,9 @@ jobs:
       - name: Download artifacts produced during the build_wheels and build_sdist jobs
         uses: actions/download-artifact@v4
         with:
-          name: dist-*
+          pattern: dist-*
           path: dist/
           merge-multiple: true
-
 
       - name: Display structure of downloaded files
         run: ls -R
