@@ -31,3 +31,5 @@ target_link_libraries(_cgal_pybind PRIVATE Eigen3::Eigen)
 
 find_package(CGAL CONFIG REQUIRED)
 target_link_libraries(_cgal_pybind PRIVATE CGAL::CGAL)
+
+install(TARGETS _cgal_pybind LIBRARY DESTINATION cgal_pybind)
