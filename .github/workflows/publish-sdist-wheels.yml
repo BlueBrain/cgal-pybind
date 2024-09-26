@@ -4,7 +4,7 @@ on: [pull_request, push]
 env:
   CIBW_BUILD_VERBOSITY: 3
   CIBW_BUILD: 'cp3*'
-  CIBW_SKIP: 'cp35-* cp36-* cp37-* *-musllinux_* *-manylinux_i686'
+  CIBW_SKIP: 'cp36-* cp37-* *-musllinux_* *-manylinux_i686'
   CIBW_TEST_REQUIRES: pytest trimesh numpy
   CIBW_TEST_COMMAND: "pytest {project}/tests"
 
@@ -105,4 +105,4 @@ jobs:
         with:
           user: __token__
           password: ${{ secrets.PYPI_PASSWORD }}
-          packages_dir: dist/
+          packages-dir: dist/
