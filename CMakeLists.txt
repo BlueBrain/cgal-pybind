@@ -1,12 +1,17 @@
-cmake_minimum_required(VERSION 3.9.0)
+cmake_minimum_required(VERSION 3.15)
 
-project(_cgal_pybind)
+project(
+    _cgal_pybind
+    VERSION ${SKBUILD_PROJECT_VERSION}
+    LANGUAGES CXX
+)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# TODO(mgevaert): add EXTLIB_FROM_SUBMODULES option
-add_subdirectory(extlib EXCLUDE_FROM_ALL)
+
+set(PYBIND11_NEWPYTHON ON)
+find_package(pybind11 CONFIG REQUIRED)
 
 pybind11_add_module(_cgal_pybind
     ${CMAKE_CURRENT_SOURCE_DIR}/src/cgal_bind.cpp
@@ -26,3 +31,5 @@ target_link_libraries(_cgal_pybind PRIVATE Eigen3::Eigen)
 
 find_package(CGAL CONFIG REQUIRED)
 target_link_libraries(_cgal_pybind PRIVATE CGAL::CGAL)
+
+install(TARGETS _cgal_pybind LIBRARY DESTINATION cgal_pybind)
