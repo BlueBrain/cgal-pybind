@@ -18,13 +18,13 @@ set +u  # ignore missing variables in activation script
 source "$BIN/activate"
 set -u
 
-"$BIN/pip" install -U pipx
+"$BIN/pip" install --upgrade build twine
 
 # Build distribution
-"$BIN/pipx" run build --sdist
+"$BIN/python" -m build
 
 # Check metadata
-"$BIN/pipx" run twine check dist/*
+"$BIN/twine" check dist/*
 
 
 ls -al dist
