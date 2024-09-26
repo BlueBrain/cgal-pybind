@@ -2,7 +2,6 @@
 requires = [
     "scikit-build-core>= 0.4.3",
     "pybind11",
-    "setuptools_scm"
 ]
 build-backend = "scikit_build_core.build"
 
