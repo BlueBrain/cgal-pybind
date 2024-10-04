@@ -7,6 +7,7 @@ env:
   CIBW_SKIP: 'cp36-* cp37-* *-musllinux_* *-manylinux_i686'
   CIBW_TEST_REQUIRES: pytest trimesh numpy
   CIBW_TEST_COMMAND: "pytest {project}/tests"
+  UV_SYSTEM_PYTHON: true
 
 jobs:
   build_wheels:
@@ -24,13 +25,13 @@ jobs:
         with:
           submodules: 'true'
 
+      - name: Setup Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
       - name: Install uv
         uses: astral-sh/setup-uv@v3
-        with:
-          version: "0.4.18"
-
-      - name: Set up Python 3.12
-        run: uv python install 3.12
 
       - name: Install cibuildwheel
         run: |
@@ -47,7 +48,7 @@ jobs:
             curl -L https://sourceforge.net/projects/boost/files/boost/1.68.0/boost_1_68_0.tar.gz | tar xzf - --strip 1 -C /usr/local/include boost_1_68_0/boost
             curl -L https://github.com/CGAL/cgal/releases/download/releases/CGAL-5.0.3/CGAL-5.0.3-library.tar.xz | tar xJf - -C /tmp
 
-        run: 
+        run:
           uv tool run cibuildwheel --output-dir dist
 
       - name: Store wheel as artifact
@@ -66,13 +67,10 @@ jobs:
         with:
           submodules: 'true'
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@v3
+      - name: Setup Python 3.12
+        uses: actions/setup-python@v5
         with:
-          version: "0.4.18"
-
-      - name: Set up Python 3.12
-        run: uv python install 3.12
+          python-version: '3.12'
 
       - name: Install packages
         run: sudo apt-get update && sudo apt-get install libcgal-dev libeigen3-dev
