@@ -24,14 +24,17 @@ jobs:
         with:
           submodules: 'true'
 
-      - uses: actions/setup-python@v5
-        name: Install Python 3.12
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
         with:
-          python-version: '3.12'
+          version: "0.4.18"
+
+      - name: Set up Python 3.12
+        run: uv python install 3.12
 
       - name: Install cibuildwheel
         run: |
-          python -m pip install cibuildwheel[uv]
+          uv pip install cibuildwheel[uv]
 
       - name: Build wheels on Linux
         if: runner.os == 'Linux'
@@ -44,8 +47,8 @@ jobs:
             curl -L https://sourceforge.net/projects/boost/files/boost/1.68.0/boost_1_68_0.tar.gz | tar xzf - --strip 1 -C /usr/local/include boost_1_68_0/boost
             curl -L https://github.com/CGAL/cgal/releases/download/releases/CGAL-5.0.3/CGAL-5.0.3-library.tar.xz | tar xJf - -C /tmp
 
-        run: |
-          python -m cibuildwheel --output-dir dist
+        run: 
+          uv tool run cibuildwheel --output-dir dist
 
       - name: Store wheel as artifact
         uses: actions/upload-artifact@v4
@@ -63,10 +66,13 @@ jobs:
         with:
           submodules: 'true'
 
-      - name: Set up Python 3.12
-        uses: actions/setup-python@v5
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
         with:
-          python-version: 3.12
+          version: "0.4.18"
+
+      - name: Set up Python 3.12
+        run: uv python install 3.12
 
       - name: Install packages
         run: sudo apt-get update && sudo apt-get install libcgal-dev libeigen3-dev
