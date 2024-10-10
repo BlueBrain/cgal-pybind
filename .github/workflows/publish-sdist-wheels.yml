@@ -4,7 +4,7 @@ on: [pull_request, push]
 env:
   CIBW_BUILD_VERBOSITY: 3
   CIBW_BUILD: 'cp3*'
-  CIBW_SKIP: 'cp36-* cp37-* *-musllinux_* *-manylinux_i686'
+  CIBW_SKIP: 'cp36-* cp37-* cp38-* *-musllinux_* *-manylinux_i686'
   CIBW_TEST_REQUIRES: pytest trimesh numpy
   CIBW_TEST_COMMAND: "pytest {project}/tests"
 
